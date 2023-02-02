@@ -63,7 +63,28 @@ clusterApi:
   enabled: true
   core:
     repo: https://github.com/stackhpc/azimuth-argo.git
-    path: cluster-api
+    path: cluster-api/core
+    version: main
+    # Kustomize options for the Argo app
+    # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
+    kustomize: {}
+  bootstrap:
+    repo: https://github.com/stackhpc/azimuth-argo.git
+    path: cluster-api/bootstrap
+    version: main
+    # Kustomize options for the Argo app
+    # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
+    kustomize: {}
+  controlPlane:
+    repo: https://github.com/stackhpc/azimuth-argo.git
+    path: cluster-api/control-plane
+    version: main
+    # Kustomize options for the Argo app
+    # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
+    kustomize: {}
+  openstack:
+    repo: https://github.com/stackhpc/azimuth-argo.git
+    path: cluster-api/openstack
     version: main
     # Kustomize options for the Argo app
     # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/

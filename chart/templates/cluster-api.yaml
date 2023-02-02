@@ -1,22 +1,102 @@
-{{- define "azimuth-argo.cluster-api.coreSource" -}}
-repoURL: {{ .Values.clusterApi.core.repo }}
-path: {{ .Values.clusterApi.core.path }}
-targetRevision: {{ .Values.clusterApi.core.version }}
-{{- with .Values.clusterApi.core.kustomize }}
-kustomize: {{ toYaml . | nindent 2 }}
-{{- end }}
-{{- end }}
-
 {{- if .Values.clusterApi.enabled }}
 ---
-{{
-  include
-    "azimuth-argo.application"
-    (list
-      .
-      "cluster-api"
-      nil
-      "azimuth-argo.cluster-api.coreSource"
-    )
-}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ list . "capi-core" | include "azimuth-argo.componentName" }}
+  labels: {{ list . "capi-core" | include "azimuth-argo.componentLabels" | nindent 4 }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination: {{ list . | include "azimuth-argo.app.destination" | nindent 4 }}
+  project: {{ include "azimuth-argo.fullName" . }}
+  source:
+    repoURL: {{ .Values.clusterApi.core.repo }}
+    path: {{ .Values.clusterApi.core.path }}
+    targetRevision: {{ .Values.clusterApi.core.version }}
+    {{- with .Values.clusterApi.core.kustomize }}
+    kustomize: {{ toYaml . | nindent 2 }}
+    {{- end }}
+  syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
+  # Ignore differences in the caBundle injected by cert-manager
+  ignoreDifferences:
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      jsonPointers:
+        - /spec/conversion/webhook/clientConfig/caBundle
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ list . "capi-bootstrap" | include "azimuth-argo.componentName" }}
+  labels: {{ list . "capi-bootstrap" | include "azimuth-argo.componentLabels" | nindent 4 }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination: {{ list . | include "azimuth-argo.app.destination" | nindent 4 }}
+  project: {{ include "azimuth-argo.fullName" . }}
+  source:
+    repoURL: {{ .Values.clusterApi.bootstrap.repo }}
+    path: {{ .Values.clusterApi.bootstrap.path }}
+    targetRevision: {{ .Values.clusterApi.bootstrap.version }}
+    {{- with .Values.clusterApi.bootstrap.kustomize }}
+    kustomize: {{ toYaml . | nindent 2 }}
+    {{- end }}
+  syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
+  # Ignore differences in the caBundle injected by cert-manager
+  ignoreDifferences:
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      jsonPointers:
+        - /spec/conversion/webhook/clientConfig/caBundle
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ list . "capi-control-plane" | include "azimuth-argo.componentName" }}
+  labels: {{ list . "capi-control-plane" | include "azimuth-argo.componentLabels" | nindent 4 }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination: {{ list . | include "azimuth-argo.app.destination" | nindent 4 }}
+  project: {{ include "azimuth-argo.fullName" . }}
+  source:
+    repoURL: {{ .Values.clusterApi.controlPlane.repo }}
+    path: {{ .Values.clusterApi.controlPlane.path }}
+    targetRevision: {{ .Values.clusterApi.controlPlane.version }}
+    {{- with .Values.clusterApi.controlPlane.kustomize }}
+    kustomize: {{ toYaml . | nindent 2 }}
+    {{- end }}
+  syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
+  # Ignore differences in the caBundle injected by cert-manager
+  ignoreDifferences:
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      jsonPointers:
+        - /spec/conversion/webhook/clientConfig/caBundle
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ list . "capi-openstack" | include "azimuth-argo.componentName" }}
+  labels: {{ list . "capi-openstack" | include "azimuth-argo.componentLabels" | nindent 4 }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination: {{ list . | include "azimuth-argo.app.destination" | nindent 4 }}
+  project: {{ include "azimuth-argo.fullName" . }}
+  source:
+    repoURL: {{ .Values.clusterApi.openstack.repo }}
+    path: {{ .Values.clusterApi.openstack.path }}
+    targetRevision: {{ .Values.clusterApi.openstack.version }}
+    {{- with .Values.clusterApi.openstack.kustomize }}
+    kustomize: {{ toYaml . | nindent 2 }}
+    {{- end }}
+  syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
+  # Ignore differences in the caBundle injected by cert-manager
+  ignoreDifferences:
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      jsonPointers:
+        - /spec/conversion/webhook/clientConfig/caBundle
 {{- end }}

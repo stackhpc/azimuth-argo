@@ -79,31 +79,19 @@ Labels for a component resource.
 {{- end -}}
 
 {{/*
-Produces an Argo app for the given inputs.
+Produces an Argo app destination.
 */}}
-{{- define "azimuth-argo.application" -}}
-{{- $ctx := index . 0 }}
-{{- $component := index . 1 }}
-{{- $targetNamespace := index . 2 }}
-{{- $sourceTemplate := index . 3 }}
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: {{ include "azimuth-argo.componentName" (list $ctx $component) }}
-  labels: {{ include "azimuth-argo.componentLabels" (list $ctx $component) | nindent 4 }}
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
-spec:
-  destination:
-    {{- if $ctx.Values.argocd.destination.name }}
-    name: {{ $ctx.Values.argocd.destination.name }}
-    {{- else }}
-    server: {{ $ctx.Values.argocd.destination.server }}
-    {{- end }}
-    {{- if $targetNamespace }}
-    namespace: {{ $targetNamespace }}
-    {{- end }}
-  project: {{ include "azimuth-argo.fullName" $ctx }}
-  source: {{ include $sourceTemplate $ctx | nindent 4 }}
-  syncPolicy: {{ toYaml $ctx.Values.argocd.syncPolicy | nindent 4 }}
+{{- define "azimuth-argo.app.destination" -}}
+{{- $ctx := first . -}}
+{{- $rest := rest . -}}
+{{- if $ctx.Values.argocd.destination.name -}}
+name: {{ $ctx.Values.argocd.destination.name }}
+{{- else -}}
+server: {{ $ctx.Values.argocd.destination.server }}
+{{- end }}
+{{- if $rest }}
+namespace: {{ first $rest }}
+{{- else }}
+namespace: default
+{{- end }}
 {{- end }}
