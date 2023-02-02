@@ -6,4 +6,6 @@ metadata:
   annotations:
     # Apps will not delete if the project is gone
     helm.sh/resource-policy: keep
+    # Make sure that the project exists before everything else when Argo is being used
+    argocd.argoproj.io/sync-wave: "-2"
 spec: {{ toYaml .Values.argocd.project | nindent 2 }}

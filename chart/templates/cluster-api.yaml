@@ -5,10 +5,13 @@ kind: Application
 metadata:
   name: {{ list . "capi-core" | include "azimuth-argo.componentName" }}
   labels: {{ list . "capi-core" | include "azimuth-argo.componentLabels" | nindent 4 }}
+  annotations:
+    # Cluster API components should sync after cert-manager is healthy
+    argocd.argoproj.io/sync-wave: "1"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  destination: {{ list . | include "azimuth-argo.app.destination" | nindent 4 }}
+  destination: {{ list . "capi-system" | include "azimuth-argo.app.destination" | nindent 4 }}
   project: {{ include "azimuth-argo.fullName" . }}
   source:
     repoURL: {{ .Values.clusterApi.core.repo }}
@@ -30,10 +33,13 @@ kind: Application
 metadata:
   name: {{ list . "capi-bootstrap" | include "azimuth-argo.componentName" }}
   labels: {{ list . "capi-bootstrap" | include "azimuth-argo.componentLabels" | nindent 4 }}
+  annotations:
+    # Cluster API components should sync after cert-manager is healthy
+    argocd.argoproj.io/sync-wave: "1"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  destination: {{ list . | include "azimuth-argo.app.destination" | nindent 4 }}
+  destination: {{ list . "capi-kubeadm-bootstrap-system" | include "azimuth-argo.app.destination" | nindent 4 }}
   project: {{ include "azimuth-argo.fullName" . }}
   source:
     repoURL: {{ .Values.clusterApi.bootstrap.repo }}
@@ -55,10 +61,13 @@ kind: Application
 metadata:
   name: {{ list . "capi-control-plane" | include "azimuth-argo.componentName" }}
   labels: {{ list . "capi-control-plane" | include "azimuth-argo.componentLabels" | nindent 4 }}
+  annotations:
+    # Cluster API components should sync after cert-manager is healthy
+    argocd.argoproj.io/sync-wave: "1"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  destination: {{ list . | include "azimuth-argo.app.destination" | nindent 4 }}
+  destination: {{ list . "capi-kubeadm-control-plane-system" | include "azimuth-argo.app.destination" | nindent 4 }}
   project: {{ include "azimuth-argo.fullName" . }}
   source:
     repoURL: {{ .Values.clusterApi.controlPlane.repo }}
@@ -80,10 +89,13 @@ kind: Application
 metadata:
   name: {{ list . "capi-openstack" | include "azimuth-argo.componentName" }}
   labels: {{ list . "capi-openstack" | include "azimuth-argo.componentLabels" | nindent 4 }}
+  annotations:
+    # Cluster API components should sync after cert-manager is healthy
+    argocd.argoproj.io/sync-wave: "1"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  destination: {{ list . | include "azimuth-argo.app.destination" | nindent 4 }}
+  destination: {{ list . "capo-system" | include "azimuth-argo.app.destination" | nindent 4 }}
   project: {{ include "azimuth-argo.fullName" . }}
   source:
     repoURL: {{ .Values.clusterApi.openstack.repo }}
@@ -105,6 +117,9 @@ kind: Application
 metadata:
   name: {{ list . "capi-addons" | include "azimuth-argo.componentName" }}
   labels: {{ list . "capi-addons" | include "azimuth-argo.componentLabels" | nindent 4 }}
+  annotations:
+    # Cluster API components should sync after cert-manager is healthy
+    argocd.argoproj.io/sync-wave: "1"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:

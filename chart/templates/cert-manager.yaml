@@ -5,6 +5,9 @@ kind: Application
 metadata:
   name: {{ list . "cert-manager" | include "azimuth-argo.componentName" }}
   labels: {{ list . "cert-manager" | include "azimuth-argo.componentLabels" | nindent 4 }}
+  annotations:
+    # cert-manager has no other dependencies
+    argocd.argoproj.io/sync-wave: "0"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -31,6 +34,9 @@ kind: Application
 metadata:
   name: {{ list . "acme-http01-issuer" | include "azimuth-argo.componentName" }}
   labels: {{ list . "acme-http01-issuer" | include "azimuth-argo.componentLabels" | nindent 4 }}
+  annotations:
+    # Install the issuer after cert-manager is healthy
+    argocd.argoproj.io/sync-wave: "1"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:

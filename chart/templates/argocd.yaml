@@ -5,8 +5,9 @@ kind: Application
 metadata:
   name: {{ list . "argocd" | include "azimuth-argo.componentName" }}
   labels: {{ list . "argocd" | include "azimuth-argo.componentLabels" | nindent 4 }}
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    # ArgoCD should be synchronised before everything else
+    argocd.argoproj.io/sync-wave: "-1"
 spec:
   destination: {{ list . .Release.Namespace | include "azimuth-argo.app.destination" | nindent 4 }}
   project: {{ include "azimuth-argo.fullName" . }}

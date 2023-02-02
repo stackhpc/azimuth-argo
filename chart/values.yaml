@@ -1,3 +1,6 @@
+# By default, make an installation called azimuth
+fullNameOverride: azimuth
+
 # Configuration for the Argo CD 
 argocd:
   # The Argo CD cluster to target
