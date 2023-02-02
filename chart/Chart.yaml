@@ -1,0 +1,7 @@
+apiVersion: v2
+description: Argo app-of-apps chart for deploying Azimuth.
+name: azimuth-argo
+type: application
+# The version and appVersion are updated by the chart build script
+version: 0.1.0
+appVersion: master

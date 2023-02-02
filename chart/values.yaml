@@ -1,0 +1,70 @@
+# Configuration for the Argo CD 
+argocd:
+  # The Argo CD cluster to target
+  destination:
+    # The URL of the API server
+    server: https://kubernetes.default.svc
+    # The name of the cluster as known to Argo CD
+    # Takes precedence over server if given
+    name:
+  # The Argo CD project configuration
+  project:
+    sourceRepos:
+      - "*"
+    clusterResourceWhitelist:
+      - group: "*"
+        kind: "*"
+    destinations:
+      - server: "*"
+        namespace: "*"
+  # The sync policy to use with Argo apps
+  # See https://argo-cd.readthedocs.io/en/stable/user-guide/auto_sync/
+  #     https://argo-cd.readthedocs.io/en/stable/user-guide/sync-options/
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - "ApplyOutOfSyncOnly=true"
+      - "CreateNamespace=true"
+      - "ServerSideApply=true"
+
+# Values for the raw chart, used to post templated manifests where no chart is available
+rawChart:
+  repo: https://charts.helm.sh/incubator
+  name: raw
+  version: 0.2.5
+
+# Configuration for cert-manager
+certManager:
+  # Indicates if cert-manager should be enabled
+  # NOTE: cert-manager is a required dependency of Cluster API
+  enabled: true
+  # The Helm chart to use for installing cert-manager
+  chart:
+    repo: https://charts.jetstack.io
+    name: cert-manager
+    version: v1.11.0
+  # The release details for cert-manager
+  release:
+    name: cert-manager
+    namespace: cert-manager
+    values: {}
+  # Configuration for the HTTP-01 issuer that should be used for HTTPS support
+  acmeHttp01Issuer:
+    enabled: true
+    name: letsencrypt
+    server: https://acme-v02.api.letsencrypt.org/directory
+    ingressClass: nginx
+
+# Configuration for the Cluster API controllers
+clusterApi:
+  # Indicates if the Cluster API controllers should be enabled
+  enabled: true
+  core:
+    repo: https://github.com/stackhpc/azimuth-argo.git
+    path: cluster-api
+    version: main
+    # Kustomize options for the Argo app
+    # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
+    kustomize: {}

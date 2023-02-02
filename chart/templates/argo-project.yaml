@@ -1,0 +1,9 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ include "azimuth-argo.fullName" . }}
+  labels: {{ include "azimuth-argo.labels" . | nindent 4 }}
+  annotations:
+    # Apps will not delete if the project is gone
+    helm.sh/resource-policy: keep
+spec: {{ toYaml .Values.argocd.project | nindent 2 }}

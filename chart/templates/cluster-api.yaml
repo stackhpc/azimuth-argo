@@ -1,0 +1,22 @@
+{{- define "azimuth-argo.cluster-api.coreSource" -}}
+repoURL: {{ .Values.clusterApi.core.repo }}
+path: {{ .Values.clusterApi.core.path }}
+targetRevision: {{ .Values.clusterApi.core.version }}
+{{- with .Values.clusterApi.core.kustomize }}
+kustomize: {{ toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}
+
+{{- if .Values.clusterApi.enabled }}
+---
+{{
+  include
+    "azimuth-argo.application"
+    (list
+      .
+      "cluster-api"
+      nil
+      "azimuth-argo.cluster-api.coreSource"
+    )
+}}
+{{- end }}
