@@ -8,14 +8,14 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  destination: {{ list . "argocd" | include "azimuth-argo.app.destination" | nindent 4 }}
+  destination: {{ list . .Release.Namespace | include "azimuth-argo.app.destination" | nindent 4 }}
   project: {{ include "azimuth-argo.fullName" . }}
   source:
     repoURL: {{ .Values.argocd.selfManaged.repo }}
     path: {{ .Values.argocd.selfManaged.path }}
     targetRevision: {{ .Values.argocd.selfManaged.version }}
     {{- with .Values.argocd.selfManaged.kustomize }}
-    kustomize: {{ toYaml . | nindent 2 }}
+    kustomize: {{ toYaml . | nindent 6 }}
     {{- end }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
 {{- end }}

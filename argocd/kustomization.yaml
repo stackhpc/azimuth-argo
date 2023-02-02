@@ -4,7 +4,7 @@ kind: Kustomization
 # See https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#manage-argo-cd-using-argo-cd
 
 bases:
-  - github.com/argoproj/argo-cd//manifests/cluster-install?ref=v2.5.9
+  - github.com/argoproj/argo-cd/manifests/cluster-install?ref=v2.5.9
 
 # changes to config maps
 patchesStrategicMerge:

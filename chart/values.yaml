@@ -38,7 +38,11 @@ argocd:
     version: main
     # Kustomize options for the Argo app
     # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
-    kustomize: {}
+    kustomize:
+      # Until https://github.com/argoproj/gitops-engine/pull/503 or similar is merged,
+      # we need to use our own Argo image
+      images:
+        - quay.io/argoproj/argocd=ghcr.io/stackhpc/argocd:v2.6.0-stackhpc.2
 
 # Values for the raw chart, used to post templated manifests where no chart is available
 rawChart:
@@ -51,12 +55,10 @@ certManager:
   # Indicates if cert-manager should be enabled
   # NOTE: cert-manager is a required dependency of Cluster API
   enabled: true
-  # The Helm chart to use for installing cert-manager
   chart:
     repo: https://charts.jetstack.io
     name: cert-manager
     version: v1.11.0
-  # The release details for cert-manager
   release:
     name: cert-manager
     namespace: cert-manager
@@ -69,10 +71,11 @@ certManager:
     server: https://acme-v02.api.letsencrypt.org/directory
     ingressClass: nginx
 
-# Configuration for the Cluster API controllers
+# Configuration for the Cluster API providers
 clusterApi:
   # Indicates if the Cluster API controllers should be enabled
   enabled: true
+  # Configuration for the core provider
   core:
     repo: https://github.com/stackhpc/azimuth-argo.git
     path: cluster-api/core
@@ -80,6 +83,7 @@ clusterApi:
     # Kustomize options for the Argo app
     # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
     kustomize: {}
+  # Configuration for the bootstrap provider
   bootstrap:
     repo: https://github.com/stackhpc/azimuth-argo.git
     path: cluster-api/bootstrap
@@ -87,6 +91,7 @@ clusterApi:
     # Kustomize options for the Argo app
     # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
     kustomize: {}
+  # Configuration for the kubeadm control plane provider
   controlPlane:
     repo: https://github.com/stackhpc/azimuth-argo.git
     path: cluster-api/control-plane
@@ -94,6 +99,7 @@ clusterApi:
     # Kustomize options for the Argo app
     # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
     kustomize: {}
+  # Configuation for the openstack infratructure provider
   openstack:
     repo: https://github.com/stackhpc/azimuth-argo.git
     path: cluster-api/openstack
@@ -101,3 +107,13 @@ clusterApi:
     # Kustomize options for the Argo app
     # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
     kustomize: {}
+  # Configuration for the StackHPC addon provider
+  addons:
+    chart:
+      repo: https://stackhpc.github.io/cluster-api-addon-provider
+      name: cluster-api-addon-provider
+      version: 0.1.0-dev.0.feature-argo-support.31
+    release:
+      name: cluster-api-addon-provider
+      namespace: capi-addon-system
+      values: {}

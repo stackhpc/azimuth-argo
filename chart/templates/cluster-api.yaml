@@ -15,7 +15,7 @@ spec:
     path: {{ .Values.clusterApi.core.path }}
     targetRevision: {{ .Values.clusterApi.core.version }}
     {{- with .Values.clusterApi.core.kustomize }}
-    kustomize: {{ toYaml . | nindent 2 }}
+    kustomize: {{ toYaml . | nindent 6 }}
     {{- end }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
   # Ignore differences in the caBundle injected by cert-manager
@@ -40,7 +40,7 @@ spec:
     path: {{ .Values.clusterApi.bootstrap.path }}
     targetRevision: {{ .Values.clusterApi.bootstrap.version }}
     {{- with .Values.clusterApi.bootstrap.kustomize }}
-    kustomize: {{ toYaml . | nindent 2 }}
+    kustomize: {{ toYaml . | nindent 6 }}
     {{- end }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
   # Ignore differences in the caBundle injected by cert-manager
@@ -65,7 +65,7 @@ spec:
     path: {{ .Values.clusterApi.controlPlane.path }}
     targetRevision: {{ .Values.clusterApi.controlPlane.version }}
     {{- with .Values.clusterApi.controlPlane.kustomize }}
-    kustomize: {{ toYaml . | nindent 2 }}
+    kustomize: {{ toYaml . | nindent 6 }}
     {{- end }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
   # Ignore differences in the caBundle injected by cert-manager
@@ -90,7 +90,7 @@ spec:
     path: {{ .Values.clusterApi.openstack.path }}
     targetRevision: {{ .Values.clusterApi.openstack.version }}
     {{- with .Values.clusterApi.openstack.kustomize }}
-    kustomize: {{ toYaml . | nindent 2 }}
+    kustomize: {{ toYaml . | nindent 6 }}
     {{- end }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
   # Ignore differences in the caBundle injected by cert-manager
@@ -99,4 +99,29 @@ spec:
       kind: CustomResourceDefinition
       jsonPointers:
         - /spec/conversion/webhook/clientConfig/caBundle
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ list . "capi-addons" | include "azimuth-argo.componentName" }}
+  labels: {{ list . "capi-addons" | include "azimuth-argo.componentLabels" | nindent 4 }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    {{-
+      list . .Values.clusterApi.addons.release.namespace |
+        include "azimuth-argo.app.destination" |
+        nindent 4
+    }}
+  project: {{ include "azimuth-argo.fullName" . }}
+  source:
+    repoURL: {{ .Values.clusterApi.addons.chart.repo }}
+    chart: {{ .Values.clusterApi.addons.chart.name }}
+    targetRevision: {{ .Values.clusterApi.addons.chart.version }}
+    helm:
+      releaseName: {{ .Values.clusterApi.addons.release.name }}
+      values: |
+        {{- tpl (toYaml .Values.clusterApi.addons.release.values) . | nindent 8 }}
+  syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
 {{- end }}
