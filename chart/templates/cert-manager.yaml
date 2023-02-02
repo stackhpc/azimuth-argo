@@ -1,7 +1,3 @@
-{{- define "azimuth-argo.cert-manager.defaultValues" -}}
-installCRDs: true
-{{- end }}
-
 {{- if .Values.certManager.enabled }}
 ---
 apiVersion: argoproj.io/v1alpha1
@@ -26,13 +22,7 @@ spec:
     helm:
       releaseName: {{ .Values.certManager.release.name }}
       values: |
-        {{-
-          include "azimuth-argo.cert-manager.defaultValues" . |
-            fromYaml |
-            mustMerge .Values.certManager.release.values |
-            toYaml |
-            nindent 8
-        }}
+        {{- tpl (toYaml .Values.certManager.release.values) . | nindent 8 }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
 {{- if .Values.certManager.acmeHttp01Issuer.enabled }}
 ---

@@ -1,0 +1,21 @@
+{{- if .Values.argocd.selfManaged.enabled }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ list . "argocd" | include "azimuth-argo.componentName" }}
+  labels: {{ list . "argocd" | include "azimuth-argo.componentLabels" | nindent 4 }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination: {{ list . "argocd" | include "azimuth-argo.app.destination" | nindent 4 }}
+  project: {{ include "azimuth-argo.fullName" . }}
+  source:
+    repoURL: {{ .Values.argocd.selfManaged.repo }}
+    path: {{ .Values.argocd.selfManaged.path }}
+    targetRevision: {{ .Values.argocd.selfManaged.version }}
+    {{- with .Values.argocd.selfManaged.kustomize }}
+    kustomize: {{ toYaml . | nindent 2 }}
+    {{- end }}
+  syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
+{{- end }}

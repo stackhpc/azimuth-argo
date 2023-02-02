@@ -28,6 +28,17 @@ argocd:
       - "ApplyOutOfSyncOnly=true"
       - "CreateNamespace=true"
       - "ServerSideApply=true"
+  # Configuration for the self-managing Argo CD app
+  selfManaged:
+    # Indicates whether the Argo CD should be self-managing
+    enabled: true
+    # The location of the kustomize configuration
+    repo: https://github.com/stackhpc/azimuth-argo.git
+    path: argocd
+    version: main
+    # Kustomize options for the Argo app
+    # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
+    kustomize: {}
 
 # Values for the raw chart, used to post templated manifests where no chart is available
 rawChart:
@@ -49,7 +60,8 @@ certManager:
   release:
     name: cert-manager
     namespace: cert-manager
-    values: {}
+    values:
+      installCRDs: true
   # Configuration for the HTTP-01 issuer that should be used for HTTPS support
   acmeHttp01Issuer:
     enabled: true
