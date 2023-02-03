@@ -8,22 +8,10 @@ metadata:
   annotations:
     # ArgoCD should be synchronised before everything else
     argocd.argoproj.io/sync-wave: "-1"
+  # Don't include the resource finalizer so that the Argo deployment is left behind when the app is deleted
 spec:
   destination: {{ list . .Release.Namespace | include "azimuth-argo.app.destination" | nindent 4 }}
   project: {{ include "azimuth-argo.fullName" . }}
-  source:
-    repoURL: {{ .Values.argocd.selfManaged.repo }}
-    path: {{ .Values.argocd.selfManaged.path }}
-    targetRevision: {{ .Values.argocd.selfManaged.version }}
-    kustomize: {{
-      include
-        "azimuth-argo.util.merge"
-        (list
-          .
-          .Values.argocd.selfManaged.kustomize
-          .Values.argocd.selfManaged.kustomizeTemplate
-        ) |
-        nindent 6
-    }}
+  source: {{ include "azimuth-argo.app.source.kustomize" (list . .Values.argocd.selfManaged) | nindent 4 }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
 {{- end }}

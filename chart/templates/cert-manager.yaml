@@ -1,3 +1,19 @@
+{{- define "azimuth-argo.cert-manager.issuer.manifests" -}}
+- apiVersion: cert-manager.io/v1
+  kind: ClusterIssuer
+  metadata:
+    name: {{ .Values.certManager.acmeHttp01Issuer.name }}
+  spec:
+    acme:
+      server: {{ .Values.certManager.acmeHttp01Issuer.server }}
+      privateKeySecretRef:
+        name: {{ .Values.certManager.acmeHttp01Issuer.name }}-privkey
+      solvers:
+        - http01:
+            ingress:
+              class: {{ .Values.certManager.acmeHttp01Issuer.ingressClass }}
+{{- end }}
+
 {{- if .Values.certManager.enabled }}
 ---
 apiVersion: argoproj.io/v1alpha1
@@ -18,23 +34,7 @@ spec:
         nindent 4
     }}
   project: {{ include "azimuth-argo.fullName" . }}
-  source:
-    repoURL: {{ .Values.certManager.chart.repo }}
-    chart: {{ .Values.certManager.chart.name }}
-    targetRevision: {{ .Values.certManager.chart.version }}
-    helm:
-      releaseName: {{ .Values.certManager.release.name }}
-      values: |
-        {{
-          include
-            "azimuth-argo.util.merge"
-            (list
-              .
-              .Values.certManager.release.values
-              .Values.certManager.release.valuesTemplate
-            ) |
-            nindent 8
-        }}
+  source: {{ include "azimuth-argo.app.source.helm" (list . .Values.certManager) | nindent 4 }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
 {{- if .Values.certManager.acmeHttp01Issuer.enabled }}
 ---
@@ -51,27 +51,12 @@ metadata:
 spec:
   destination: {{ list . | include "azimuth-argo.app.destination" | nindent 4 }}
   project: {{ include "azimuth-argo.fullName" . }}
-  source:
-    repoURL: {{ .Values.rawChart.repo }}
-    chart: {{ .Values.rawChart.name }}
-    targetRevision: {{ .Values.rawChart.version }}
-    helm:
-      releaseName: {{ .Values.certManager.release.name }}
-      values: |
-        resources:
-          - apiVersion: cert-manager.io/v1
-            kind: ClusterIssuer
-            metadata:
-              name: {{ .Values.certManager.acmeHttp01Issuer.name }}
-            spec:
-              acme:
-                server: {{ .Values.certManager.acmeHttp01Issuer.server }}
-                privateKeySecretRef:
-                  name: {{ .Values.certManager.acmeHttp01Issuer.name }}-privkey
-                solvers:
-                  - http01:
-                      ingress:
-                        class: {{ .Values.certManager.acmeHttp01Issuer.ingressClass }}
+  source: {{
+    include
+      "azimuth-argo.app.source.manifests"
+      (list . .Values.certManager.release.name "azimuth-argo.cert-manager.issuer.manifests") |
+    nindent 4
+  }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
 {{- end }}
 {{- end }}

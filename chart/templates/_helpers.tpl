@@ -116,3 +116,57 @@ Values from the template take precedence over the map if both are given.
 {{- toYaml $mapValues }}
 {{- end }}
 {{- end }}
+
+{{/*
+Produces an Argo app source for a Helm installation.
+*/}}
+{{- define "azimuth-argo.app.source.helm" -}}
+{{- $ctx := index . 0 -}}
+{{- $cfg := index . 1 -}}
+repoURL: {{ $cfg.chart.repo }}
+chart: {{ $cfg.chart.name }}
+targetRevision: {{ $cfg.chart.version }}
+helm:
+  releaseName: {{ $cfg.release.name }}
+  {{- if or $cfg.release.values $cfg.release.valuesTemplate }}
+  values: |
+    {{-
+      include
+        "azimuth-argo.util.merge"
+        (list $ctx $cfg.release.values $cfg.release.valuesTemplate) |
+      nindent 4
+    }}
+  {{- end }}
+{{- end }}
+
+{{/*
+Produces an Argo app source for a Kustomize installation.
+*/}}
+{{- define "azimuth-argo.app.source.kustomize" -}}
+{{- $ctx := index . 0 -}}
+{{- $cfg := index . 1 -}}
+repoURL: {{ $cfg.repo }}
+path: {{ $cfg.path }}
+targetRevision: {{ $cfg.version }}
+{{- if or $cfg.kustomize $cfg.kustomizeTemplate }}
+kustomize: {{ include "azimuth-argo.util.merge" (list $ctx $cfg.kustomize $cfg.kustomizeTemplate) | nindent 2 }}
+{{- end }}
+{{- end }}
+
+{{/*
+Produces an Argo app source for a list of manifests.
+
+This essentially uses the raw Helm chart to install a list of resources.
+*/}}
+{{- define "azimuth-argo.app.source.manifests" -}}
+{{- $ctx := index . 0 -}}
+{{- $releaseName := index . 1 -}}
+{{- $manifestsTemplate := index . 2 -}}
+repoURL: {{ $ctx.Values.rawChart.repo }}
+chart: {{ $ctx.Values.rawChart.name }}
+targetRevision: {{ $ctx.Values.rawChart.version }}
+helm:
+  releaseName: {{ $releaseName }}
+  values: |
+    resources: {{ include $manifestsTemplate $ctx | nindent 6 }}
+{{- end }}

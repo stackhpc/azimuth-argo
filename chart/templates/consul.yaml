@@ -18,30 +18,6 @@ spec:
         nindent 4
     }}
   project: {{ include "azimuth-argo.fullName" . }}
-  source:
-    repoURL: {{ .Values.consul.chart.repo }}
-    chart: {{ .Values.consul.chart.name }}
-    targetRevision: {{ .Values.consul.chart.version }}
-    helm:
-      releaseName: {{ .Values.consul.release.name }}
-      values: |
-        {{
-          include
-            "azimuth-argo.util.merge"
-            (list
-              .
-              .Values.consul.release.values
-              .Values.consul.release.valuesTemplate
-            ) |
-            nindent 8
-        }}
-  # Ignore the apiVersion and kind injected into volume claim templates by the Kubernetes API server
-  ignoreDifferences:
-    - group: apps
-      kind: StatefulSet
-      jsonPointers:
-        - /spec/volumeClaimTemplates/-/apiVersion
-      # jqPathExpressions:
-      #   - '.spec.volumeClaimTemplates | map(with_entries(select(.key == ["apiVersion", "kind"][])))'
+  source: {{ include "azimuth-argo.app.source.helm" (list . .Values.consul) | nindent 4 }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
 {{- end }}
