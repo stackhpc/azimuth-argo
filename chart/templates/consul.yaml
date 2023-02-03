@@ -40,6 +40,6 @@ spec:
     - group: apps
       kind: StatefulSet
       jqPathExpressions:
-        - .spec.volumeClaimTemplates | map(with_entries(select(.key == ["apiVersion", "kind"][]))
+        - '.spec.volumeClaimTemplates | map(with_entries(select(.key == ["apiVersion", "kind"][]))'
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
 {{- end }}
