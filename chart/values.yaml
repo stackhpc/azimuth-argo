@@ -35,7 +35,7 @@ argocd:
     enabled: true
     # The location of the kustomize configuration
     repo: https://github.com/stackhpc/azimuth-argo.git
-    path: argocd
+    path: kustomize/argocd
     version: main
     # Kustomize options for the Argo app
     # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
@@ -80,7 +80,7 @@ clusterApi:
   # Configuration for the core provider
   core:
     repo: https://github.com/stackhpc/azimuth-argo.git
-    path: cluster-api/core
+    path: kustomize/cluster-api-core
     version: main
     # Kustomize options for the Argo app
     # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
@@ -89,7 +89,7 @@ clusterApi:
   # Configuration for the bootstrap provider
   bootstrap:
     repo: https://github.com/stackhpc/azimuth-argo.git
-    path: cluster-api/bootstrap
+    path: kustomize/cluster-api-bootstrap
     version: main
     # Kustomize options for the Argo app
     # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
@@ -98,7 +98,7 @@ clusterApi:
   # Configuration for the kubeadm control plane provider
   controlPlane:
     repo: https://github.com/stackhpc/azimuth-argo.git
-    path: cluster-api/control-plane
+    path: kustomize/cluster-api-control-plane
     version: main
     # Kustomize options for the Argo app
     # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
@@ -107,7 +107,7 @@ clusterApi:
   # Configuation for the openstack infratructure provider
   openstack:
     repo: https://github.com/stackhpc/azimuth-argo.git
-    path: cluster-api/openstack
+    path: kustomize/cluster-api-openstack
     version: main
     # Kustomize options for the Argo app
     # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/

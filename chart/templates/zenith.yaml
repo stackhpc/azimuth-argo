@@ -1,0 +1,28 @@
+{{- if .Values.zenith.enabled }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ list . "zenith" | include "azimuth-argo.componentName" }}
+  labels: {{ list . "zenith" | include "azimuth-argo.componentLabels" | nindent 4 }}
+  annotations:
+    # Zenith should deploy after consul
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    {{-
+      list . .Values.zenith.release.namespace |
+        include "azimuth-argo.app.destination" |
+        nindent 4
+    }}
+  project: {{ include "azimuth-argo.fullName" . }}
+  source: {{-
+    include
+      "azimuth-argo.app.source.helm"
+      (list . "azimuth-argo.util.empty" .Values.zenith) |
+    nindent 4
+  }}
+  syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
+{{- end }}

@@ -1,0 +1,6 @@
+# On a single node, we have to use a single Consul replica
+consul:
+  release:
+    values:
+      server:
+        replicas: 1
