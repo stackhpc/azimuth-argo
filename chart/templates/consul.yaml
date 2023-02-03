@@ -1,0 +1,39 @@
+{{- if .Values.consul.enabled }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ list . "consul" | include "azimuth-argo.componentName" }}
+  labels: {{ list . "consul" | include "azimuth-argo.componentLabels" | nindent 4 }}
+  annotations:
+    # consul has no other dependencies
+    argocd.argoproj.io/sync-wave: "0"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    {{-
+      list . .Values.consul.release.namespace |
+        include "azimuth-argo.app.destination" |
+        nindent 4
+    }}
+  project: {{ include "azimuth-argo.fullName" . }}
+  source:
+    repoURL: {{ .Values.consul.chart.repo }}
+    chart: {{ .Values.consul.chart.name }}
+    targetRevision: {{ .Values.consul.chart.version }}
+    helm:
+      releaseName: {{ .Values.consul.release.name }}
+      values: |
+        {{
+          include
+            "azimuth-argo.util.merge"
+            (list
+              .
+              .Values.consul.release.values
+              .Values.consul.release.valuesTemplate
+            ) |
+            nindent 8
+        }}
+  syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
+{{- end }}

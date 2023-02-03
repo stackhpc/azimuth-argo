@@ -17,9 +17,16 @@ spec:
     repoURL: {{ .Values.clusterApi.core.repo }}
     path: {{ .Values.clusterApi.core.path }}
     targetRevision: {{ .Values.clusterApi.core.version }}
-    {{- with .Values.clusterApi.core.kustomize }}
-    kustomize: {{ toYaml . | nindent 6 }}
-    {{- end }}
+    kustomize: {{
+      include
+        "azimuth-argo.util.merge"
+        (list
+          .
+          .Values.clusterApi.core.kustomize
+          .Values.clusterApi.core.kustomizeTemplate
+        ) |
+        nindent 6
+    }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
   # Ignore differences in the caBundle injected by cert-manager
   ignoreDifferences:
@@ -45,9 +52,16 @@ spec:
     repoURL: {{ .Values.clusterApi.bootstrap.repo }}
     path: {{ .Values.clusterApi.bootstrap.path }}
     targetRevision: {{ .Values.clusterApi.bootstrap.version }}
-    {{- with .Values.clusterApi.bootstrap.kustomize }}
-    kustomize: {{ toYaml . | nindent 6 }}
-    {{- end }}
+    kustomize: {{
+      include
+        "azimuth-argo.util.merge"
+        (list
+          .
+          .Values.clusterApi.bootstrap.kustomize
+          .Values.clusterApi.bootstrap.kustomizeTemplate
+        ) |
+        nindent 6
+    }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
   # Ignore differences in the caBundle injected by cert-manager
   ignoreDifferences:
@@ -73,9 +87,16 @@ spec:
     repoURL: {{ .Values.clusterApi.controlPlane.repo }}
     path: {{ .Values.clusterApi.controlPlane.path }}
     targetRevision: {{ .Values.clusterApi.controlPlane.version }}
-    {{- with .Values.clusterApi.controlPlane.kustomize }}
-    kustomize: {{ toYaml . | nindent 6 }}
-    {{- end }}
+    kustomize: {{
+      include
+        "azimuth-argo.util.merge"
+        (list
+          .
+          .Values.clusterApi.controlPlane.kustomize
+          .Values.clusterApi.controlPlane.kustomizeTemplate
+        ) |
+        nindent 6
+    }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
   # Ignore differences in the caBundle injected by cert-manager
   ignoreDifferences:
@@ -101,9 +122,16 @@ spec:
     repoURL: {{ .Values.clusterApi.openstack.repo }}
     path: {{ .Values.clusterApi.openstack.path }}
     targetRevision: {{ .Values.clusterApi.openstack.version }}
-    {{- with .Values.clusterApi.openstack.kustomize }}
-    kustomize: {{ toYaml . | nindent 6 }}
-    {{- end }}
+    kustomize: {{
+      include
+        "azimuth-argo.util.merge"
+        (list
+          .
+          .Values.clusterApi.openstack.kustomize
+          .Values.clusterApi.openstack.kustomizeTemplate
+        ) |
+        nindent 6
+    }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
   # Ignore differences in the caBundle injected by cert-manager
   ignoreDifferences:
@@ -137,6 +165,15 @@ spec:
     helm:
       releaseName: {{ .Values.clusterApi.addons.release.name }}
       values: |
-        {{- tpl (toYaml .Values.clusterApi.addons.release.values) . | nindent 8 }}
+        {{
+          include
+            "azimuth-argo.util.merge"
+            (list
+              .
+              .Values.clusterApi.addons.release.values
+              .Values.clusterApi.addons.release.valuesTemplate
+            ) |
+            nindent 8
+        }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
 {{- end }}

@@ -46,6 +46,7 @@ argocd:
       # we need to use our own Argo image
       images:
         - quay.io/argoproj/argocd=ghcr.io/stackhpc/argocd:v2.6.0-stackhpc.2
+    kustomizeTemplate: ""
 
 # Values for the raw chart, used to post templated manifests where no chart is available
 rawChart:
@@ -67,6 +68,7 @@ certManager:
     namespace: cert-manager
     values:
       installCRDs: true
+    valuesTemplate: ""
   # Configuration for the HTTP-01 issuer that should be used for HTTPS support
   acmeHttp01Issuer:
     enabled: true
@@ -86,6 +88,7 @@ clusterApi:
     # Kustomize options for the Argo app
     # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
     kustomize: {}
+    kustomizeTemplate: ""
   # Configuration for the bootstrap provider
   bootstrap:
     repo: https://github.com/stackhpc/azimuth-argo.git
@@ -94,6 +97,7 @@ clusterApi:
     # Kustomize options for the Argo app
     # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
     kustomize: {}
+    kustomizeTemplate: ""
   # Configuration for the kubeadm control plane provider
   controlPlane:
     repo: https://github.com/stackhpc/azimuth-argo.git
@@ -102,6 +106,7 @@ clusterApi:
     # Kustomize options for the Argo app
     # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
     kustomize: {}
+    kustomizeTemplate: ""
   # Configuation for the openstack infratructure provider
   openstack:
     repo: https://github.com/stackhpc/azimuth-argo.git
@@ -110,6 +115,7 @@ clusterApi:
     # Kustomize options for the Argo app
     # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
     kustomize: {}
+    kustomizeTemplate: ""
   # Configuration for the StackHPC addon provider
   addons:
     chart:
@@ -120,3 +126,22 @@ clusterApi:
       name: cluster-api-addon-provider
       namespace: capi-addon-system
       values: {}
+      valuesTemplate: ""
+
+# Configuration for Consul
+consul:
+  # Indicates if Consul should be enabled
+  # If not enabled, some components will require external Consul details to be specified
+  enabled: true
+  chart:
+    repo: https://helm.releases.hashicorp.com
+    name: consul
+    version: 0.49.2
+  release:
+    name: consul
+    namespace: azimuth
+    values:
+      fullnameOverride: consul
+      server:
+        replicas: 3
+    valuesTemplate: ""

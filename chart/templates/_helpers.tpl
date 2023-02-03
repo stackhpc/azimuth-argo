@@ -95,3 +95,24 @@ namespace: {{ first $rest }}
 namespace: default
 {{- end }}
 {{- end }}
+
+{{/*
+Helper for merging values from a map and a template.
+
+The map is also rendered to YAML and templated, allowing individual items in the
+map to contain template statements, but this only permits templating of strings.
+Supporting an additional template allows other types to be templated also.
+
+Values from the template take precedence over the map if both are given.
+*/}}
+{{- define "azimuth-argo.util.merge" -}}
+{{- $ctx := index . 0 -}}
+{{- $map := index . 1 -}}
+{{- $template := index . 2 -}}
+{{- $mapValues := tpl (toYaml $map) $ctx | fromYaml -}}
+{{- if $template -}}
+{{- tpl $template $ctx | fromYaml | mustMergeOverwrite $mapValues | toYaml }}
+{{- else -}}
+{{- toYaml $mapValues }}
+{{- end }}
+{{- end }}

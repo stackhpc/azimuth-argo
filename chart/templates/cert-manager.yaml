@@ -25,7 +25,16 @@ spec:
     helm:
       releaseName: {{ .Values.certManager.release.name }}
       values: |
-        {{- tpl (toYaml .Values.certManager.release.values) . | nindent 8 }}
+        {{
+          include
+            "azimuth-argo.util.merge"
+            (list
+              .
+              .Values.certManager.release.values
+              .Values.certManager.release.valuesTemplate
+            ) |
+            nindent 8
+        }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
 {{- if .Values.certManager.acmeHttp01Issuer.enabled }}
 ---
