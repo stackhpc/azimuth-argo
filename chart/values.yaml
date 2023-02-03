@@ -39,11 +39,7 @@ argocd:
     version: main
     # Kustomize options for the Argo app
     # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
-    kustomize:
-      # Until https://github.com/argoproj/gitops-engine/pull/503 or similar is merged,
-      # we need to use our own Argo image
-      images:
-        - quay.io/argoproj/argocd=ghcr.io/stackhpc/argocd:v2.6.0-stackhpc.2
+    kustomize: {}
     kustomizeTemplate: ""
 
 # Values for the raw chart, used to post templated manifests where no chart is available
@@ -51,6 +47,10 @@ rawChart:
   repo: https://charts.helm.sh/incubator
   name: raw
   version: 0.2.5
+
+# Configuration for ingress
+ingress:
+  baseDomain:
 
 # Configuration for cert-manager
 certManager:
@@ -64,8 +64,7 @@ certManager:
   release:
     name: cert-manager
     namespace: cert-manager
-    values:
-      installCRDs: true
+    values: {}
     valuesTemplate: ""
   # Configuration for the HTTP-01 issuer that should be used for HTTPS support
   acmeHttp01Issuer:
@@ -129,7 +128,6 @@ clusterApi:
 # Configuration for Consul
 consul:
   # Indicates if Consul should be enabled
-  # If not enabled, some components will require external Consul details to be specified
   enabled: true
   chart:
     repo: https://helm.releases.hashicorp.com
@@ -138,8 +136,19 @@ consul:
   release:
     name: consul
     namespace: azimuth
-    values:
-      fullnameOverride: consul
-      server:
-        replicas: 3
+    values: {}
+    valuesTemplate: ""
+
+# Configuration for Zenith
+zenith:
+  # Indicates if Zenith should be enabled
+  enabled: true
+  chart:
+    repo: https://stackhpc.github.io/zenith
+    name: zenith-server
+    version: 0.1.0-dev.0.main.168
+  release:
+    name: zenith-server
+    namespace: azimuth
+    values: {}
     valuesTemplate: ""

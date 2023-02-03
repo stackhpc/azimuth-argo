@@ -97,24 +97,23 @@ namespace: default
 {{- end }}
 
 {{/*
-Helper for merging values from a map and a template.
-
-The map is also rendered to YAML and templated, allowing individual items in the
-map to contain template statements, but this only permits templating of strings.
-Supporting an additional template allows other types to be templated also.
-
-Values from the template take precedence over the map if both are given.
+Helper for merging values from a defaults template, a map and an ephemeral template.
 */}}
 {{- define "azimuth-argo.util.merge" -}}
 {{- $ctx := index . 0 -}}
-{{- $map := index . 1 -}}
-{{- $template := index . 2 -}}
-{{- $mapValues := tpl (toYaml $map) $ctx | fromYaml -}}
-{{- if $template -}}
-{{- tpl $template $ctx | fromYaml | mustMergeOverwrite $mapValues | toYaml }}
-{{- else -}}
-{{- toYaml $mapValues }}
+{{- $defaultsTemplate := index . 1 -}}
+{{- $map := index . 2 -}}
+{{- $template := index . 3 | default "{}" -}}
+{{- $defaultValues := include $defaultsTemplate $ctx | fromYaml -}}
+{{- $templateValues := tpl $template $ctx | fromYaml -}}
+{{- mustMergeOverwrite $defaultValues $map $templateValues | toYaml }}
 {{- end }}
+
+{{/*
+Template that produces an empty dictionary.
+*/}}
+{{- define "azimuth-argo.util.empty" -}}
+{}
 {{- end }}
 
 {{/*
@@ -122,20 +121,23 @@ Produces an Argo app source for a Helm installation.
 */}}
 {{- define "azimuth-argo.app.source.helm" -}}
 {{- $ctx := index . 0 -}}
-{{- $cfg := index . 1 -}}
+{{- $defaultsTemplate := index . 1 -}}
+{{- $cfg := index . 2 -}}
+{{-
+  $values :=
+    include
+      "azimuth-argo.util.merge"
+      (list $ctx $defaultsTemplate $cfg.release.values $cfg.release.valuesTemplate) |
+    fromYaml
+-}}
 repoURL: {{ $cfg.chart.repo }}
 chart: {{ $cfg.chart.name }}
 targetRevision: {{ $cfg.chart.version }}
 helm:
   releaseName: {{ $cfg.release.name }}
-  {{- if or $cfg.release.values $cfg.release.valuesTemplate }}
+  {{- with $values }}
   values: |
-    {{-
-      include
-        "azimuth-argo.util.merge"
-        (list $ctx $cfg.release.values $cfg.release.valuesTemplate) |
-      nindent 4
-    }}
+    {{- toYaml . | nindent 4 }}
   {{- end }}
 {{- end }}
 
@@ -144,12 +146,20 @@ Produces an Argo app source for a Kustomize installation.
 */}}
 {{- define "azimuth-argo.app.source.kustomize" -}}
 {{- $ctx := index . 0 -}}
-{{- $cfg := index . 1 -}}
+{{- $defaultsTemplate := index . 1 -}}
+{{- $cfg := index . 2 -}}
+{{-
+  $kustomize :=
+    include
+      "azimuth-argo.util.merge"
+      (list $ctx $defaultsTemplate $cfg.kustomize $cfg.kustomizeTemplate) |
+    fromYaml
+-}}
 repoURL: {{ $cfg.repo }}
 path: {{ $cfg.path }}
 targetRevision: {{ $cfg.version }}
-{{- if or $cfg.kustomize $cfg.kustomizeTemplate }}
-kustomize: {{ include "azimuth-argo.util.merge" (list $ctx $cfg.kustomize $cfg.kustomizeTemplate) | nindent 2 }}
+{{- with $kustomize }}
+kustomize: {{- toYaml . | nindent 2 }}
 {{- end }}
 {{- end }}
 
