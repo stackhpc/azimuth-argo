@@ -35,5 +35,11 @@ spec:
             ) |
             nindent 8
         }}
+  # Ignore the apiVersion and kind injected into volume claim templates by the Kubernetes API server
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      jqPathExpressions:
+        - .spec.volumeClaimTemplates | map(with_entries(select(.key == ["apiVersion", "kind"][]))
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
 {{- end }}
