@@ -29,6 +29,7 @@ argocd:
       selfHeal: true
     syncOptions:
       - "CreateNamespace=true"
+      - "ServerSideApply=true"
   # Configuration for the self-managing Argo CD app
   selfManaged:
     # Indicates whether the Argo CD should be self-managing
