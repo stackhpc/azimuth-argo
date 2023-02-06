@@ -301,6 +301,7 @@ azimuth:
         - name: password
           type: openstack-password
           label: Username + Password
+          openstackPassword: {}
       {{- if .Values.zenith.enabled }}
       apps:
         baseDomain: {{ .Values.ingress.baseDomain }}
