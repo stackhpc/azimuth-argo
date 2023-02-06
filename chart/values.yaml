@@ -250,7 +250,7 @@ capiOperator:
   chart:
     repo: https://stackhpc.github.io/azimuth-capi-operator
     name: azimuth-capi-operator
-    version: 0.1.0-dev.0.feature-argo-support.114
+    version: 0.1.0-dev.0.feature-argo-support.118
   release:
     name: azimuth-capi-operator
     namespace: azimuth
