@@ -247,22 +247,13 @@ capiOperator:
     name: azimuth-capi-operator
     namespace: azimuth
     defaultsTemplate: |
-      zenith:
-        registrarAdminUrl: {{ include "azimuth-argo.zenith.registrar.adminUrl" . }}
-        sshdService:
-          name: {{ include "azimuth-argo.zenith.componentName" (list . "sshd") }}
-          namespace: {{ .Values.zenith.release.namespace }}
-    values:
-      capiHelm:
-        defaultValues:
-          addons:
-            openstack:
-              cloudConfig:
-                BlockStorage:
-                  ignore-volume-az: "true"
-              csiCinder:
-                storageClass:
-                  availabilityZone: nova
+      config:
+        zenith:
+          registrarAdminUrl: {{ include "azimuth-argo.zenith.registrar.adminUrl" . }}
+          sshdService:
+            name: {{ include "azimuth-argo.zenith.componentName" (list . "sshd") }}
+            namespace: {{ .Values.zenith.release.namespace }}
+    values: {}
     valuesTemplate: ""
 
 # Configuration for Azimuth itself
