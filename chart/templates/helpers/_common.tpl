@@ -105,7 +105,7 @@ Helper for merging values from a defaults template, a map and an overrides templ
 {{- $map := index . 2 -}}
 {{- $overridesTemplate := index . 3 | default "{}" -}}
 {{- $defaults := tpl $defaultsTemplate $ctx | fromYaml -}}
-{{- $overrides := tpl $template $ctx | fromYaml -}}
+{{- $overrides := tpl $overridesTemplate $ctx | fromYaml -}}
 {{- mustMergeOverwrite $defaults $map $overrides | toYaml }}
 {{- end }}
 
@@ -115,7 +115,7 @@ Produces the values for a Helm installation.
 {{- define "azimuth-argo.util.helmValues" -}}
 {{- $ctx := index . 0 -}}
 {{- $cfg := index . 1 -}}
-{{- $defaultsTemplate := default "{}" $cfg.defaultsTemplate -}}
+{{- $defaultsTemplate := default "{}" $cfg.release.defaultsTemplate -}}
 {{-
   include
     "azimuth-argo.util.merge"
