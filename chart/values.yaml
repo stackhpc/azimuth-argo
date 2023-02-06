@@ -274,7 +274,7 @@ azimuth:
   chart:
     repo: https://stackhpc.github.io/azimuth
     name: azimuth
-    version: 0.1.0-dev.0.main.168
+    version: 0.1.0-dev.0.feature-argo-addons.701
   release:
     name: azimuth
     namespace: azimuth
