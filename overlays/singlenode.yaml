@@ -1,3 +1,5 @@
+installMode: singlenode
+
 # On a single node, we have to use a single Consul replica
 consul:
   release:

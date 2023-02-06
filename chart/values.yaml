@@ -1,3 +1,6 @@
+# The install mode for the installation
+installMode: ha
+
 # By default, make an installation called azimuth
 fullNameOverride: azimuth
 
@@ -183,7 +186,7 @@ zenith:
         consul:
           address: {{ include "azimuth-argo.consul.host" . | quote }}
         ingress:
-          baseDomain: {{ include "azimuth-argo.ingress.baseDomain" . }}
+          baseDomain: {{ .Values.ingress.baseDomain }}
           annotations: {{- toYaml .Values.ingress.annotations | nindent 6 }}
           tls:
             {{- if .Values.ingress.tls.enabled }}
@@ -250,9 +253,12 @@ capiOperator:
       config:
         zenith:
           registrarAdminUrl: {{ include "azimuth-argo.zenith.registrar.adminUrl" . }}
-          sshdService:
-            name: {{ include "azimuth-argo.zenith.componentName" (list . "sshd") }}
-            namespace: {{ .Values.zenith.release.namespace }}
+          {{- with (include "azimuth-argo.zenith.sshd.host" .) }}
+          sshdHost: {{ . }}
+          {{- end }}
+          {{- with (include "azimuth-argo.zenith.sshd.port" .) }}
+          sshdPort: {{ . }}
+          {{- end }}
     values: {}
     valuesTemplate: ""
 
