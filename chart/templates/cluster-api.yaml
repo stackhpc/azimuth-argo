@@ -13,12 +13,8 @@ metadata:
 spec:
   destination: {{ list . "capi-system" | include "azimuth-argo.app.destination" | nindent 4 }}
   project: {{ include "azimuth-argo.fullName" . }}
-  source: {{-
-    include
-      "azimuth-argo.app.source.kustomize"
-      (list . "azimuth-argo.util.empty" .Values.clusterApi.core) |
-    nindent 4
-  }}
+  source:
+    {{- include "azimuth-argo.app.source.kustomize" (list . .Values.clusterApi.core) | nindent 4 }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
   # Ignore differences in the caBundle injected by cert-manager
   ignoreDifferences:
@@ -40,12 +36,8 @@ metadata:
 spec:
   destination: {{ list . "capi-kubeadm-bootstrap-system" | include "azimuth-argo.app.destination" | nindent 4 }}
   project: {{ include "azimuth-argo.fullName" . }}
-  source: {{-
-    include
-      "azimuth-argo.app.source.kustomize"
-      (list . "azimuth-argo.util.empty" .Values.clusterApi.bootstrap) |
-    nindent 4
-  }}
+  source:
+    {{- include "azimuth-argo.app.source.kustomize" (list . .Values.clusterApi.bootstrap) | nindent 4 }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
   # Ignore differences in the caBundle injected by cert-manager
   ignoreDifferences:
@@ -67,12 +59,8 @@ metadata:
 spec:
   destination: {{ list . "capi-kubeadm-control-plane-system" | include "azimuth-argo.app.destination" | nindent 4 }}
   project: {{ include "azimuth-argo.fullName" . }}
-  source: {{-
-    include
-      "azimuth-argo.app.source.kustomize"
-      (list . "azimuth-argo.util.empty" .Values.clusterApi.controlPlane) |
-    nindent 4
-  }}
+  source:
+    {{- include "azimuth-argo.app.source.kustomize" (list . .Values.clusterApi.controlPlane) | nindent 4 }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
   # Ignore differences in the caBundle injected by cert-manager
   ignoreDifferences:
@@ -94,12 +82,8 @@ metadata:
 spec:
   destination: {{ list . "capo-system" | include "azimuth-argo.app.destination" | nindent 4 }}
   project: {{ include "azimuth-argo.fullName" . }}
-  source: {{-
-    include
-      "azimuth-argo.app.source.kustomize"
-      (list . "azimuth-argo.util.empty" .Values.clusterApi.openstack) |
-    nindent 4
-  }}
+  source:
+    {{- include "azimuth-argo.app.source.kustomize" (list . .Values.clusterApi.openstack) | nindent 4 }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
   # Ignore differences in the caBundle injected by cert-manager
   ignoreDifferences:
@@ -126,11 +110,7 @@ spec:
         nindent 4
     }}
   project: {{ include "azimuth-argo.fullName" . }}
-  source: {{-
-    include
-      "azimuth-argo.app.source.helm"
-      (list . "azimuth-argo.util.empty" .Values.clusterApi.addons) |
-    nindent 4
-  }}
+  source:
+    {{- include "azimuth-argo.app.source.helm" (list . .Values.clusterApi.addons) | nindent 4 }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
 {{- end }}

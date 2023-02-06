@@ -1,7 +1,3 @@
-{{- define "azimuth-argo.cert-manager.defaults" -}}
-installCRDs: true
-{{- end }}
-
 {{- define "azimuth-argo.cert-manager.issuer.manifests" -}}
 - apiVersion: cert-manager.io/v1
   kind: ClusterIssuer
@@ -38,12 +34,8 @@ spec:
         nindent 4
     }}
   project: {{ include "azimuth-argo.fullName" . }}
-  source: {{-
-    include
-      "azimuth-argo.app.source.helm"
-      (list . "azimuth-argo.cert-manager.defaults" .Values.certManager) |
-    nindent 4
-  }}
+  source:
+    {{- include "azimuth-argo.app.source.helm" (list . .Values.certManager) | nindent 4 }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
 {{- if .Values.certManager.acmeHttp01Issuer.enabled }}
 ---
@@ -60,12 +52,13 @@ metadata:
 spec:
   destination: {{ list . | include "azimuth-argo.app.destination" | nindent 4 }}
   project: {{ include "azimuth-argo.fullName" . }}
-  source: {{
-    include
-      "azimuth-argo.app.source.manifests"
-      (list . .Values.certManager.release.name "azimuth-argo.cert-manager.issuer.manifests") |
-    nindent 4
-  }}
+  source:
+    {{-
+      include
+        "azimuth-argo.app.source.manifests"
+        (list . .Values.certManager.release.name "azimuth-argo.cert-manager.issuer.manifests") |
+      nindent 4
+    }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
 {{- end }}
 {{- end }}

@@ -19,11 +19,12 @@ metadata:
 spec:
   destination: {{ list . .Release.Namespace | include "azimuth-argo.app.destination" | nindent 4 }}
   project: {{ include "azimuth-argo.fullName" . }}
-  source: {{-
-    include
-      "azimuth-argo.app.source.kustomize"
-      (list . "azimuth-argo.argocd-self-managed.defaults" .Values.argocd.selfManaged) |
-    nindent 4
-  }}
+  source:
+    {{-
+      include
+        "azimuth-argo.app.source.kustomize"
+        (list . "azimuth-argo.argocd-self-managed.defaults" .Values.argocd.selfManaged) |
+      nindent 4
+    }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
 {{- end }}

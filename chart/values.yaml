@@ -32,7 +32,7 @@ argocd:
   # Configuration for the self-managing Argo CD app
   selfManaged:
     # Indicates whether the Argo CD should be self-managing
-    enabled: true
+    enabled: false
     # The location of the kustomize configuration
     repo: https://github.com/stackhpc/azimuth-argo.git
     path: kustomize/argocd
@@ -48,9 +48,34 @@ rawChart:
   name: raw
   version: 0.2.5
 
+# Configuration for the wildcard certificate, if used
+wildcardCertificate:
+  # Indicates if a wildcard certificate should be used
+  enabled: false
+  # The name of the secret containing the wildcard certificate
+  # This will be the same in each namespace in which it is reflected
+  secretName: azimuth-tls
+  # The namespace to create the "master copy" of the secret in
+  secretNamespace: azimuth
+
 # Configuration for ingress
 ingress:
+  # The base domain for the ingress
   baseDomain:
+  # Annotations added to all ingresses in the deployment
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-buffer-size: 16k
+  # TLS configuration for the ingress
+  tls:
+    # Indicates whether TLS should be enabled
+    enabled: true
+  # The subdomains to use for the various components
+  subdomains:
+    azimuth: portal
+    zenithRegistrar: registrar
+    harborCore: registry
+    harborNotary: notary
+    cloudMetricsGrafana: metrics
 
 # Configuration for cert-manager
 certManager:
@@ -64,7 +89,8 @@ certManager:
   release:
     name: cert-manager
     namespace: cert-manager
-    values: {}
+    values:
+      installCRDs: true
     valuesTemplate: ""
   # Configuration for the HTTP-01 issuer that should be used for HTTPS support
   acmeHttp01Issuer:
@@ -136,7 +162,9 @@ consul:
   release:
     name: consul
     namespace: azimuth
-    values: {}
+    values:
+      # Avoid the repeated "consul" in the names by default
+      fullnameOverride: consul
     valuesTemplate: ""
 
 # Configuration for Zenith
@@ -149,6 +177,72 @@ zenith:
     version: 0.1.0-dev.0.main.168
   release:
     name: zenith-server
+    namespace: azimuth
+    defaultsTemplate: |
+      common:
+        consul:
+          address: {{ include "azimuth-argo.consul.host" . | quote }}
+        ingress:
+          baseDomain: {{ include "azimuth-argo.ingress.baseDomain" . }}
+          annotations: {{- toYaml .Values.ingress.annotations | nindent 6 }}
+          tls:
+            {{- if .Values.ingress.tls.enabled }}
+            enabled: true
+            {{- if .Values.wildcardCertificate.enabled }}
+            secretName: {{ .Values.wildcardCertificate.secretName }}
+            {{- else }}
+            annotations: {{- include "azimuth-argo.ingress.tls.annotations" . | nindent 8 -}}
+            {{- end }}
+            {{- else }}
+            enabled: false
+            {{- end }}
+      sync:
+        config:
+          kubernetes:
+            ingress:
+              auth:
+                url: {{
+                  printf
+                    "http://%s-api.%s.svc.cluster.local/api/session/verify/"
+                    .Values.azimuth.release.name
+                    .Values.azimuth.release.namespace
+                }}
+                signinUrl: {{
+                  printf
+                    "%s://%s.%s/auth/login"
+                    (.Values.ingress.tls.enabled | ternary "https" "http")
+                    .Values.ingress.subdomains.azimuth
+                    .Values.ingress.baseDomain
+                }}
+      registrar:
+        ingress:
+          subdomain: {{ .Values.ingress.subdomains.zenithRegistrar }}
+        config:
+          reservedSubdomains: {{- values .Values.ingress.subdomains | toYaml | nindent 6 }}
+    values:
+      # We don't need Zenith to deploy a Consul server
+      consul:
+        enabled: false
+      sync:
+        config:
+          kubernetes:
+            ingress:
+              auth:
+                nextUrlParam: next
+                requestHeaders:
+                  accept: application/json
+                responseHeaders:
+                  - X-Remote-User
+    valuesTemplate: ""
+
+# Configuration for Azimuth itself
+azimuth:
+  chart:
+    repo: https://stackhpc.github.io/azimuth
+    name: azimuth
+    version: 0.1.0-dev.0.main.168
+  release:
+    name: azimuth
     namespace: azimuth
     values: {}
     valuesTemplate: ""
