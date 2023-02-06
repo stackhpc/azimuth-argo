@@ -1,3 +1,5 @@
 zenith:
-  registrar:
-    subdomainTokenSigningKey: notasecret
+  release:
+    values:
+      registrar:
+        subdomainTokenSigningKey: notasecret
