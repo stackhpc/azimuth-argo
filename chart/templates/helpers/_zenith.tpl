@@ -13,6 +13,15 @@
 {{- printf "%s-%s" $fullName $componentName | lower | trunc 63 | trimSuffix "-" }}
 {{- end -}}
 
+{{- define "azimuth-argo.zenith.registrar.externalUrl" -}}
+{{-
+  printf "%s://%s.%s"
+    (ternary "https" "http" .Values.ingress.tls.enabled)
+    .Values.ingress.subdomains.zenithRegistrar
+    .Values.ingress.baseDomain
+}}
+{{- end }}
+
 {{- define "azimuth-argo.zenith.registrar.adminUrl" -}}
 {{-
   printf "http://%s.%s"

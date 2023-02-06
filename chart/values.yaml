@@ -154,6 +154,11 @@ clusterApi:
       values: {}
       valuesTemplate: ""
 
+# Configuration for AWX
+awx:
+  # Indicates if AWX should be enabled
+  enabled: false
+
 # Configuration for Consul
 consul:
   # Indicates if Consul should be enabled
@@ -249,7 +254,8 @@ capiOperator:
   release:
     name: azimuth-capi-operator
     namespace: azimuth
-    defaultsTemplate: |
+    defaultsTemplate: |-
+      {{- if .Values.zenith.enabled }}
       config:
         zenith:
           registrarAdminUrl: {{ include "azimuth-argo.zenith.registrar.adminUrl" . }}
@@ -259,6 +265,7 @@ capiOperator:
           {{- with (include "azimuth-argo.zenith.sshd.port" .) }}
           sshdPort: {{ . }}
           {{- end }}
+      {{- end }}
     values: {}
     valuesTemplate: ""
 
@@ -271,5 +278,59 @@ azimuth:
   release:
     name: azimuth
     namespace: azimuth
+    defaultsTemplate: |
+      tags:
+        apps: {{ .Values.zenith.enabled | ternary "true" "false" }}
+        clusters: {{ .Values.awx.enabled | ternary "true" "false" }}
+        kubernetes: {{ .Values.capiOperator.enabled | ternary "true" "false" }}
+      ingress:
+        host: {{ printf "%s.%s" .Values.ingress.subdomains.azimuth .Values.ingress.baseDomain }}
+        annotations: {{- toYaml .Values.ingress.annotations | nindent 6 }}
+        tls:
+          {{- if .Values.ingress.tls.enabled }}
+          enabled: true
+          {{- if .Values.wildcardCertificate.enabled }}
+          secretName: {{ .Values.wildcardCertificate.secretName }}
+          {{- else }}
+          annotations: {{- include "azimuth-argo.ingress.tls.annotations" . | nindent 8 -}}
+          {{- end }}
+          {{- else }}
+          enabled: false
+          {{- end }}
+      authenticators:
+        - name: password
+          type: openstack-password
+          label: Username + Password
+      {{- if .Values.zenith.enabled }}
+      apps:
+        baseDomain: {{ .Values.ingress.baseDomain }}
+        registrarExternalUrl: {{ include "azimuth-argo.zenith.registrar.externalUrl" . }}
+        registrarAdminUrl: {{ include "azimuth-argo.zenith.registrar.adminUrl" . }}
+        {{- with (include "azimuth-argo.zenith.sshd.host" .) }}
+        sshdHost: {{ . }}
+        {{- end }}
+        {{- with (include "azimuth-argo.zenith.sshd.port" .) }}
+        sshdPort: {{ . }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.awx.enabled }}
+      clusterEngine:
+        awx:
+          url:
+          verifySsl:
+          username:
+          passwordSecretName:
+          createTeams:
+          createTeamAllowAllPermission:
+          createResources:
+          adminUsername:
+          adminPasswordSecretName:
+          executionEnvironment:
+          defaultProjects:
+        terraformBackend:
+          enabled:
+          consul:
+            address:
+      {{- end }}
     values: {}
     valuesTemplate: ""
