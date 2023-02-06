@@ -3,4 +3,4 @@ zenith:
     values:
       registrar:
         config:
-          subdomainTokenSigningKey: notasecret
+          subdomainTokenSigningKey: notasecretbutmustbeatleast32characterslong
