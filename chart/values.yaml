@@ -147,7 +147,7 @@ clusterApi:
     chart:
       repo: https://stackhpc.github.io/cluster-api-addon-provider
       name: cluster-api-addon-provider
-      version: 0.1.0-dev.0.feature-argo-support.31
+      version: 0.1.0-dev.0.feature-argo-support.32
     release:
       name: cluster-api-addon-provider
       namespace: capi-addon-system
