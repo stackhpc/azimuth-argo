@@ -235,6 +235,36 @@ zenith:
                   - X-Remote-User
     valuesTemplate: ""
 
+# Configuration for the Azimuth CAPI operator
+capiOperator:
+  # Indicates whether the Azimuth CAPI operator should be enabled
+  enabled: true
+  chart:
+    repo: https://stackhpc.github.io/azimuth-capi-operator
+    name: azimuth-capi-operator
+    version: 0.1.0-dev.0.feature-argo-support.114
+  release:
+    name: azimuth-capi-operator
+    namespace: azimuth
+    defaultsTemplate: |
+      zenith:
+        registrarAdminUrl: {{ include "azimuth-argo.zenith.registrar.adminUrl" . }}
+        sshdService:
+          name: {{ include "azimuth-argo.zenith.componentName" (list . "sshd") }}
+          namespace: {{ .Values.zenith.release.namespace }}
+    values:
+      capiHelm:
+        defaultValues:
+          addons:
+            openstack:
+              cloudConfig:
+                BlockStorage:
+                  ignore-volume-az: "true"
+              csiCinder:
+                storageClass:
+                  availabilityZone: nova
+    valuesTemplate: ""
+
 # Configuration for Azimuth itself
 azimuth:
   chart:
