@@ -1,6 +1,0 @@
-zenith:
-  release:
-    values:
-      registrar:
-        config:
-          subdomainTokenSigningKey: notasecretbutmustbeatleast32characterslong

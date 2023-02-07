@@ -14,12 +14,14 @@
 {{- end -}}
 
 {{- define "azimuth-argo.zenith.registrar.externalUrl" -}}
+{{- if .Values.ingress.baseDomain }}
 {{-
   printf "%s://%s.%s"
     (ternary "https" "http" .Values.ingress.tls.enabled)
     .Values.ingress.subdomains.zenithRegistrar
     .Values.ingress.baseDomain
 }}
+{{- end }}
 {{- end }}
 
 {{- define "azimuth-argo.zenith.registrar.adminUrl" -}}
@@ -32,24 +34,30 @@
 
 {{- define "azimuth-argo.zenith.sshd.host" -}}
 {{- $values := include "azimuth-argo.util.helmValues" (list . .Values.zenith) | fromYaml -}}
-{{- $serviceType := default "LoadBalancer" $values.sshd.service.type -}}
+{{- $serviceType := dig "sshd" "service" "type" "" $values | default "LoadBalancer" -}}
+{{-
+  $singleNodeDefault :=
+    not (not .Values.ingress.baseDomain) |
+      ternary (printf "sshd.%s" .Values.ingress.baseDomain) ""
+-}}
 {{- if eq $serviceType "LoadBalancer" }}
+  {{- $loadBalancerIP := dig "sshd" "service" "loadBalancerIP" "" $values -}}
   {{- if eq .Values.installMode "singlenode" }}
-    {{- default (printf "sshd.%s" .Values.ingress.baseDomain) $values.sshd.service.loadBalancerIP }}
+    {{- default $singleNodeDefault $loadBalancerIP }}
   {{- else }}
-    {{- default "" $values.sshd.service.loadBalancerIP }}
+    {{- $loadBalancerIP }}
   {{- end }}
 {{- else if eq $serviceType "NodePort" }}
-  {{- printf "sshd.%s" .Values.ingress.baseDomain }}
+  {{- $singleNodeDefault }}
 {{- end }}
 {{- end }}
 
 {{- define "azimuth-argo.zenith.sshd.port" -}}
 {{- $values := include "azimuth-argo.util.helmValues" (list . .Values.zenith) | fromYaml -}}
-{{- $serviceType := default "LoadBalancer" $values.sshd.service.type -}}
+{{- $serviceType := dig "sshd" "service" "type" "" $values | default "LoadBalancer" -}}
 {{- if eq $serviceType "LoadBalancer" }}
-{{- default 22 $values.sshd.service.port }}
+  {{- dig "sshd" "service" "port" "" $values | default 22 }}
 {{- else if eq $serviceType "NodePort" }}
-{{- default "" $values.sshd.service.nodePort }}
+  {{- dig "sshd" "service" "nodePort" "" $values }}
 {{- end }}
 {{- end }}

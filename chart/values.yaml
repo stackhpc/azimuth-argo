@@ -4,6 +4,9 @@ installMode: ha
 # By default, make an installation called azimuth
 fullNameOverride: azimuth
 
+# The Git repository URL to use for kustomize apps
+kustomizeGitRepoURL: https://github.com/stackhpc/azimuth-argo.git
+
 # Configuration for the Argo CD 
 argocd:
   # The Argo CD cluster to target
@@ -37,7 +40,7 @@ argocd:
     # Indicates whether the Argo CD should be self-managing
     enabled: false
     # The location of the kustomize configuration
-    repo: https://github.com/stackhpc/azimuth-argo.git
+    repo: # Defaults to kustomizeGitRepoURL
     path: kustomize/argocd
     version: main
     # Kustomize options for the Argo app
@@ -64,7 +67,7 @@ wildcardCertificate:
 # Configuration for ingress
 ingress:
   # The base domain for the ingress
-  baseDomain:
+  baseDomain: ""
   # Annotations added to all ingresses in the deployment
   annotations:
     nginx.ingress.kubernetes.io/proxy-buffer-size: 16k
@@ -108,7 +111,7 @@ clusterApi:
   enabled: true
   # Configuration for the core provider
   core:
-    repo: https://github.com/stackhpc/azimuth-argo.git
+    repo: # Defaults to kustomizeGitRepoURL
     path: kustomize/cluster-api-core
     version: main
     # Kustomize options for the Argo app
@@ -117,7 +120,7 @@ clusterApi:
     kustomizeTemplate: ""
   # Configuration for the bootstrap provider
   bootstrap:
-    repo: https://github.com/stackhpc/azimuth-argo.git
+    repo: # Defaults to kustomizeGitRepoURL
     path: kustomize/cluster-api-bootstrap
     version: main
     # Kustomize options for the Argo app
@@ -126,7 +129,7 @@ clusterApi:
     kustomizeTemplate: ""
   # Configuration for the kubeadm control plane provider
   controlPlane:
-    repo: https://github.com/stackhpc/azimuth-argo.git
+    repo: # Defaults to kustomizeGitRepoURL
     path: kustomize/cluster-api-control-plane
     version: main
     # Kustomize options for the Argo app
@@ -135,7 +138,7 @@ clusterApi:
     kustomizeTemplate: ""
   # Configuation for the openstack infratructure provider
   openstack:
-    repo: https://github.com/stackhpc/azimuth-argo.git
+    repo: # Defaults to kustomizeGitRepoURL
     path: kustomize/cluster-api-openstack
     version: main
     # Kustomize options for the Argo app
@@ -191,7 +194,9 @@ zenith:
         consul:
           address: {{ include "azimuth-argo.consul.host" . | quote }}
         ingress:
-          baseDomain: {{ .Values.ingress.baseDomain }}
+          {{- with .Values.ingress.baseDomain }}
+          baseDomain: {{ . }}
+          {{- end }}
           annotations: {{- toYaml .Values.ingress.annotations | nindent 6 }}
           tls:
             {{- if .Values.ingress.tls.enabled }}
@@ -215,6 +220,7 @@ zenith:
                     .Values.azimuth.release.name
                     .Values.azimuth.release.namespace
                 }}
+                {{- if .Values.ingress.baseDomain }}
                 signinUrl: {{
                   printf
                     "%s://%s.%s/auth/login"
@@ -222,6 +228,7 @@ zenith:
                     .Values.ingress.subdomains.azimuth
                     .Values.ingress.baseDomain
                 }}
+                {{- end }}
       registrar:
         ingress:
           subdomain: {{ .Values.ingress.subdomains.zenithRegistrar }}
@@ -284,7 +291,9 @@ azimuth:
         clusters: {{ .Values.awx.enabled | ternary "true" "false" }}
         kubernetes: {{ .Values.capiOperator.enabled | ternary "true" "false" }}
       ingress:
+        {{- if .Values.ingress.baseDomain }}
         host: {{ printf "%s.%s" .Values.ingress.subdomains.azimuth .Values.ingress.baseDomain }}
+        {{- end }}
         annotations: {{- toYaml .Values.ingress.annotations | nindent 6 }}
         tls:
           {{- if .Values.ingress.tls.enabled }}
@@ -304,8 +313,12 @@ azimuth:
           openstackPassword: {}
       {{- if .Values.zenith.enabled }}
       apps:
+        {{- if .Values.ingress.baseDomain }}
         baseDomain: {{ .Values.ingress.baseDomain }}
-        registrarExternalUrl: {{ include "azimuth-argo.zenith.registrar.externalUrl" . }}
+        {{- end }}
+        {{- with (include "azimuth-argo.zenith.registrar.externalUrl" .) }}
+        registrarExternalUrl: {{ . }}
+        {{- end }}
         registrarAdminUrl: {{ include "azimuth-argo.zenith.registrar.adminUrl" . }}
         {{- with (include "azimuth-argo.zenith.sshd.host" .) }}
         sshdHost: {{ . }}

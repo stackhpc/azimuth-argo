@@ -153,7 +153,7 @@ Produces an Argo app source for a Kustomize installation.
       (list $ctx $defaultsTemplate $cfg.kustomize $cfg.kustomizeTemplate) |
     fromYaml
 -}}
-repoURL: {{ $cfg.repo }}
+repoURL: {{ default $ctx.Values.kustomizeGitRepoURL $cfg.repo }}
 path: {{ $cfg.path }}
 targetRevision: {{ $cfg.version }}
 {{- with $kustomize }}
