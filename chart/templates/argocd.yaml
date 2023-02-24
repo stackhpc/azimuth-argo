@@ -1,10 +1,3 @@
-{{- define "azimuth-argo.argocd-self-managed.defaults" -}}
-# Until https://github.com/argoproj/gitops-engine/pull/503 or similar is merged,
-# we need to use our own Argo image
-images:
-  - quay.io/argoproj/argocd=ghcr.io/stackhpc/argocd:v2.6.0-stackhpc.2
-{{- end }}
-
 {{- if .Values.argocd.selfManaged.enabled }}
 ---
 apiVersion: argoproj.io/v1alpha1
@@ -17,14 +10,16 @@ metadata:
     argocd.argoproj.io/sync-wave: "-1"
   # Don't include the resource finalizer so that the Argo deployment is left behind when the app is deleted
 spec:
-  destination: {{ list . .Release.Namespace | include "azimuth-argo.app.destination" | nindent 4 }}
+  destination:
+    {{-
+      .Values.argocd.selfManaged.release.namespace |
+        default .Release.Namespace |
+        list . |
+        include "azimuth-argo.app.destination" |
+        nindent 4
+    }}
   project: {{ include "azimuth-argo.fullName" . }}
   source:
-    {{-
-      include
-        "azimuth-argo.app.source.kustomize"
-        (list . "azimuth-argo.argocd-self-managed.defaults" .Values.argocd.selfManaged) |
-      nindent 4
-    }}
+    {{- include "azimuth-argo.app.source.helm" (list . .Values.argocd.selfManaged) | nindent 4 }}
   syncPolicy: {{ toYaml .Values.argocd.syncPolicy | nindent 4 }}
 {{- end }}

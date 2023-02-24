@@ -39,14 +39,120 @@ argocd:
   selfManaged:
     # Indicates whether the Argo CD should be self-managing
     enabled: false
-    # The location of the kustomize configuration
-    repo: # Defaults to kustomizeGitRepoURL
-    path: kustomize/argocd
-    version: main
-    # Kustomize options for the Argo app
-    # See https://argo-cd.readthedocs.io/en/stable/user-guide/kustomize/
-    kustomize: {}
-    kustomizeTemplate: ""
+    chart:
+      repo: https://argoproj.github.io/argo-helm
+      name: argo-cd
+      version: 5.23.1
+    release:
+      name: argo-cd
+      namespace: # Defaults to the release namespace if not given
+      values:
+        global:
+          # We use a custom image with support for ignoring non-controller references
+          # Required until https://github.com/argoproj/gitops-engine/pull/503 (or similar) is merged
+          image:
+            repository: ghcr.io/stackhpc/argocd
+            tag: v2.7.0-stackhpc.3
+        configs:
+          cm:
+            # Use annotations as the tracking method as it allows longer app names
+            application.resourceTrackingMethod: annotation
+            # Ignore the rules from aggregated roles, used in Cluster API
+            resource.compareoptions: |
+              ignoreAggregatedRoles: true
+            # Allow Argo to assess the health of nested apps in app-of-apps configurations
+            resource.customizations.health.argoproj.io_Application: |
+              hs = {}
+              hs.status = "Progressing"
+              hs.message = ""
+              if obj.status ~= nil then
+                if obj.status.sync ~= nil then
+                  if obj.status.sync.status == "Synced" then
+                    if obj.status.health ~= nil then
+                      hs.status = obj.status.health.status
+                      if obj.status.health.message ~= nil then
+                        hs.message = obj.status.health.message
+                      end
+                    end
+                  end
+                end
+              end
+              return hs
+            # Tell Argo what it means for Cluster API addons to be healthy
+            resource.customizations.health.addons.stackhpc.com_HelmRelease: |
+              hs = {}
+              hs.status = "Progressing"
+              hs.message = ""
+              if obj.status ~= nil then
+                if obj.status.phase == "Ready" then
+                  hs.status = "Healthy"
+                elseif obj.status.phase == "Suspended" then
+                  hs.status = "Suspended"
+                elseif obj.status.phase == "Unhealthy" then
+                  hs.status = "Degraded"
+                  hs.message = obj.status.healthMessage
+                elseif obj.status.phase == "Failed" then
+                  hs.status = "Degraded"
+                  hs.message = obj.status.failureMessage
+                elseif obj.status.phase == "Unknown" then
+                  hs.status = "Degraded"
+                  hs.message = "Status is unknown"
+                end
+              end
+              return hs
+            resource.customizations.health.addons.stackhpc.com_Manifests: |
+              hs = {}
+              hs.status = "Progressing"
+              hs.message = ""
+              if obj.status ~= nil then
+                if obj.status.phase == "Ready" then
+                  hs.status = "Healthy"
+                elseif obj.status.phase == "Suspended" then
+                  hs.status = "Suspended"
+                elseif obj.status.phase == "Unhealthy" then
+                  hs.status = "Degraded"
+                  hs.message = obj.status.healthMessage
+                elseif obj.status.phase == "Failed" then
+                  hs.status = "Degraded"
+                  hs.message = obj.status.failureMessage
+                elseif obj.status.phase == "Unknown" then
+                  hs.status = "Degraded"
+                  hs.message = "Status is unknown"
+                end
+              end
+              return hs
+            # Tell Argo what it means for Zenith operator resources to be healthy
+            resource.customizations.health.zenith.stackhpc.com_Client: |
+              hs = {}
+              hs.status = "Progressing"
+              hs.message = ""
+              if obj.status ~= nil then
+                if obj.status.phase == "Available" then
+                  hs.status = "Healthy"
+                elseif obj.status.phase == "Unavailable" then
+                  hs.status = "Degraded"
+                elseif obj.status.phase == "Failed" then
+                  hs.status = "Degraded"
+                elseif obj.status.phase == "Unknown" then
+                  hs.status = "Degraded"
+                end
+              end
+              return hs
+            resource.customizations.health.zenith.stackhpc.com_Reservation: |
+              hs = {}
+              hs.status = "Progressing"
+              hs.message = ""
+              if obj.status ~= nil then
+                if obj.status.phase == "Ready" then
+                  hs.status = "Healthy"
+                elseif obj.status.phase == "Failed" then
+                  hs.status = "Degraded"
+                elseif obj.status.phase == "Unknown" then
+                  hs.status = "Degraded"
+                end
+              end
+              return hs
+      valuesTemplate: ""
 
 # Values for the raw chart, used to post templated manifests where no chart is available
 rawChart:
@@ -169,7 +275,7 @@ consul:
   chart:
     repo: https://helm.releases.hashicorp.com
     name: consul
-    version: 0.49.2
+    version: 0.49.3
   release:
     name: consul
     namespace: azimuth
